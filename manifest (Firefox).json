@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Better Juportal",
+  "version": "0.1.2025.629",
+  "description": "Improves the working of Juportal website.",
+  "content_scripts": [
+    {
+      "matches": [
+        "http://juportal.be/home/accueil",
+        "https://juportal.be/home/accueil",
+        "http://juportal.be/moteur/*",
+        "https://juportal.be/moteur/*",
+        "http://juportal.be/content/*",
+        "https://juportal.be/content/*"
+      ],
+      "js": ["scripts/content.js", "scripts/pdf-lib.min.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "scripting"
+  ],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Better Juportal Info"
+  },
+  "browser_specific_settings": {
+	"gecko": {
+		"id": "{71361D7E-ABEB-4A4E-A09D-E1BDFADEA18F}"
+	}
+  }
+}
