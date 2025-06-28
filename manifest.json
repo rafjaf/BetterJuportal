@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Better Juportal",
-  "version": "0.1.2025.0628",
+  "version": "0.1.2025.0629",
   "description": "Improves the working of Juportal website.",
   "content_scripts": [
     {
@@ -18,12 +18,15 @@
     }
   ],
   "permissions": [
-    "scripting",
-    "storage"
+    "scripting"
   ],
   "icons": {
     "16": "images/icon16.png",
     "48": "images/icon48.png",
     "128": "images/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Better Juportal Info"
   }
 }

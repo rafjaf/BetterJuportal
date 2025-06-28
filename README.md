@@ -4,7 +4,7 @@ This Chrome extension enhances the user experience on [Juportal](https://juporta
 
 It is available for [Chrome]() and [Firefox]().
 
-IMPORTANCE NOTICE: If you are using the Firefox extension, the first time you will surf to Justel website, a blue dot will appear on the icon of the extension. You must right-click on the extension icon and grant it permission to always run on www.ejustice.fgov.be. Otherwise, the extension will not work.
+IMPORTANCE NOTICE: If you are using the Firefox extension, the first time you will surf to Justel website, a blue dot will appear on the icon of the extension. You must right-click on the extension icon and grant it permission to always run on juportal.be. Otherwise, the extension will not work.
 
 # Features
 
