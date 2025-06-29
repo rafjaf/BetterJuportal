@@ -44,6 +44,10 @@ IMPORTANCE NOTICE: If you are using the Firefox extension, the first time you wi
     - **Advocate General Information**: The name of the Advocate General is fetched and displayed.
     - **Semantic Structuring**: For judgments of the Court of Cassation, the extension identifies and highlights key parts of the text, such as the legal provisions, the contested decision, and - with some basic logic - the Court's central teachings, making the legal reasoning easier to follow.
 
+# Privacy
+
+This extension does not collect, store, or transmit any personal data. All processing occurs locally in your browser, and no information is sent to external servers.
+
 # Credits
 
 - This extension uses the excellent [**pdf-lib**](https://pdf-lib.js.org/) library to create PDF documents.
