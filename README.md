@@ -2,7 +2,7 @@
 
 This Chrome extension enhances the user experience on [Juportal](https://juportal.be/home/accueil), the portal for the Belgian judiciary. It brings several improvements to the search page, the results page, and the case display page.
 
-It is available for [Chrome](https://chromewebstore.google.com/detail/better-juportal/nbljlhcmlagopgiflnlpaniambjicemc). The approval for [Firefox](https://addons.mozilla.org/en-US/firefox/addon/better-juportal/) is pending.
+It is available for [Chrome](https://chromewebstore.google.com/detail/better-juportal/nbljlhcmlagopgiflnlpaniambjicemc) and for [Firefox](https://addons.mozilla.org/en-US/firefox/addon/better-juportal/).
 
 IMPORTANCE NOTICE: If you are using the Firefox extension, the first time you will surf to Justel website, a blue dot will appear on the icon of the extension. You must right-click on the extension icon and grant it permission to always run on juportal.be. Otherwise, the extension will not work.
 
