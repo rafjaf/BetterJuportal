@@ -132,20 +132,20 @@
         }, false);
         // Center and enlarge search button
         let el = document.createElement("div");
-        $("button.buttonconfirm").parentElement.insertBefore(el, $("button.buttonconfirm"));
-        el.appendChild($("button.buttonconfirm"));
-        el.appendChild($("button.buttoncommand"));
+        $("button.submitconfirm").parentElement.insertBefore(el, $("button.submitconfirm"));
+        el.appendChild($("button.submitconfirm"));
+        el.appendChild($("button.submitcommand"));
         el.style.textAlign = "center";
-        $("button.buttonconfirm").style.fontSize = "large";
+        $("button.submitconfirm").style.fontSize = "large";
         // Add button to search only in Supreme Court judgments
         let btnSearchCass = document.createElement("button");
         btnSearchCass.innerText = "Cass.";
-        btnSearchCass.style.cssText = window.getComputedStyle($("button.buttonconfirm")).cssText
+        btnSearchCass.style.cssText = window.getComputedStyle($("button.submitconfirm")).cssText
         el.appendChild(btnSearchCass);
         btnSearchCass.addEventListener("click", (e) => {
             e.preventDefault();
             $("select#combojusteljurid option[value='1']").selected = true;
-            $("button.buttonconfirm").click();
+            $("button.submitconfirm").click();
         }, false);
     }
 
@@ -365,11 +365,11 @@
     async function initCase() {
         // Enhance readibility of the text of the case
         addStyle(`div.commandesdetaildecision {display: none}
-                     fieldset#text div#plaintext {font-size: 20px; width: 800px}
+                     fieldset#text div#textofdecision {font-size: 20px; width: 800px}
                      fieldset#text p {margin-top: 15px}
-                     fieldset#text div#plaintext h2 {margin-left: 30px; color: orange;}
-                     fieldset#text div#plaintext h3 {margin-left: 60px; color: green;}
-                     fieldset#text div#plaintext h4 {margin-left: 90px; color: blue;}
+                     fieldset#text div#textofdecision h2 {margin-left: 30px; color: orange;}
+                     fieldset#text div#textofdecision h3 {margin-left: 60px; color: green;}
+                     fieldset#text div#textofdecision h4 {margin-left: 90px; color: blue;}
                      button {cursor: pointer;}
                      button#Conclusions {margin-left: 20px; color: white; background-color: darkred; display: none}
                      div#TOC {float: right; position: sticky; top: 0; width: 400px; padding-top: 24px;}
@@ -414,9 +414,9 @@
             ref_fn = "Cass. " + year + "-" + String(month).padStart(2, '0') + "-" + String(day).padStart(2, '0')
                      + " n° " + RG + (linkedDocument ? " concl. MP" : "") + ".pdf";
             // Insert clickable referrence at the top of the page
-            $("div#show-author").style.marginBottom = "15px";
-            $("div#show-author").removeChild($("div#show-author img"));
-            $("div#show-author").innerHTML = "<img id='btnClipboard' style='cursor: pointer; padding-right: 10px; "
+            $("div#display-author").style.marginBottom = "15px";
+            $("div#display-author").removeChild($("div#display-author img"));
+            $("div#display-author").innerHTML = "<img id='btnClipboard' style='cursor: pointer; padding-right: 10px; "
                 + "vertical-align: sub" + "' src='" + CLIPBOARD_IMG + "'>"
                 + "<img id='btnFilename' style='cursor: pointer; padding-right: 10px; "
                 + "vertical-align: sub" + "' src='" + SAVE_IMG + "'>"
@@ -515,11 +515,11 @@
                                         /^Rejette/, /^Verwerpt/, /^Casse/, /^Vernietigt/, /^Décrète/];
                 const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
-                let html = $("fieldset#text div#plaintext").innerHTML;
+                let html = $("fieldset#text div#textofdecision").innerHTML;
                 html = "<p>" + html.replace(/<br style="user-select: text;">/g, "<br>").split("<br>").join("</p><p>") + "</p>";
-                $("fieldset#text div#plaintext").innerHTML = html;
+                $("fieldset#text div#textofdecision").innerHTML = html;
                 // Now analyse it
-                let textChildren = $("fieldset#text div#plaintext").children;
+                let textChildren = $("fieldset#text div#textofdecision").children;
                 for (let i = 0; i < textChildren.length; i++) {
                     let t = textChildren[i].textContent.trim().replace(/\t/g, ' ').replace(/  +/g, ' ');
                     if (CASS_H1.some(e => e.test(t))) {
@@ -548,13 +548,13 @@
                 if ($("h1, h2, h3, h4")) { // if at least one heading has been detected
                     let el = document.createElement("div");
                     el.id = "TOC";
-                    $("fieldset#text").insertBefore(el, $("fieldset#text div#plaintext"));
+                    $("fieldset#text").insertBefore(el, $("fieldset#text div#textofdecision"));
                     // Add clipboard and save buttons before the reference in the TOC
                     el.innerHTML = `<img id='tocBtnClipboard' style='cursor: pointer; padding-right: 10px; vertical-align: sub' src='${CLIPBOARD_IMG}'>`
                         + `<img id='tocBtnFilename' style='cursor: pointer; padding-right: 10px; vertical-align: sub' src='${SAVE_IMG}'>`
                         + `<span>${$("span#decref").textContent}</span>`
                         + "<p style='text-decoration: underline'>Table of content</p>";
-                    makeTOC($("fieldset#text div#plaintext"), el);
+                    makeTOC($("fieldset#text div#textofdecision"), el);
                     // Attach event listeners to the new TOC buttons
                     document.getElementById('tocBtnClipboard').addEventListener('click', function() {
                         document.getElementById('btnClipboard')?.click();

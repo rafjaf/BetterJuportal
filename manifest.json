@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Better Juportal",
-  "version": "0.1.2025.0630",
+  "version": "0.1.2025.0715",
   "description": "Improves the working of Juportal website.",
   "content_scripts": [
     {

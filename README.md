@@ -52,3 +52,7 @@ This extension does not collect, store, or transmit any personal data. All proce
 
 - This extension uses the excellent [**pdf-lib**](https://pdf-lib.js.org/) library to create PDF documents.
 - [**GitHub Copilot**](https://github.com/features/copilot) was used to review and improve the code.
+
+# Release history
+- Version 0.1.2025.0630 : first version published
+- Version 0.1.2025.0715 : hotfix required by slight changes in the structure of the pages of the site
