@@ -1,4 +1,4 @@
-(function() {
+(async function() {
     'use strict';
 
     const CLIPBOARD_IMG = "data:image/gif; base64,"
@@ -47,6 +47,29 @@
     }
 
     let isJudgment, linkedDocument, urlJudgment, urlOpinion, date, day, month, year, ref, ref_fn, ref_fn_Pas, RG, Pas, textAG, titleAG, nameAG, shortNameAG, introAG, urlPasicrisieDownload;
+
+    async function getStorage(key) {
+        let items = await chrome.storage.local.get(key);
+        try {
+            return(items[key]);
+        }
+        catch(e) {
+            console.error(`Error getting key ${key} from local storage:`, e);
+            return undefined;
+        }
+    }
+
+    async function setStorage(key, value) {
+        let obj = {};
+        obj[key] = value;
+        try {	
+            return await chrome.storage.local.set(obj)
+        }
+        catch(e) {
+            console.error(`Error storing value ${value} of key ${key} in local storage:`, e);
+            return undefined;
+        }
+    }
 
     function addStyle(css) {
         const style = document.createElement('style');
@@ -752,7 +775,55 @@
         $("button.buttonconfirm").click();
     }
 
+	function showStatusMessage(msg) {
+		// Create the popup element
+        let popup = document.getElementById('status');
+        if (!popup) {
+            popup = document.createElement('div');
+            popup.id = 'status';
+            addStyle(`
+                    div#status {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background-color: #0e63ac;
+                        color: #fff;
+                        text-align: center;
+                        padding: 10px;
+                        z-index: 999;
+                        overflow: hidden;
+                        opacity: 0; /* Initially hidden */
+                        transform: translateY(100%);
+                        transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+                    }
+                    div#status a {
+                    color: yellow;
+                    }` );
+            document.body.appendChild(popup);
+       }
+		popup.innerHTML = msg;
+
+		// Show the popup
+		popup.style.transform = 'translateY(0%)';
+		popup.style.opacity = '1';
+
+		// After 5 seconds, hide the popup
+		setTimeout(() => {
+			popup.style.transform = 'translateY(100%)';
+			popup.style.opacity = '0';
+		}, 10000);
+	}
+
     // Main
+    // Display status message if extension was updated
+    const lastVersion = await getStorage("extensionVersion");
+    const currentVersion = chrome.runtime.getManifest().version;
+    if (lastVersion != currentVersion) {
+        showStatusMessage(`Better Juportal has been updated to version ${currentVersion}. Click <a href="https://github.com/rafjaf/BetterJuportal#release-history" target="_blank">here</a> for more info`);
+        await setStorage("extensionVersion", currentVersion);
+    }
+
     let loc = window.location.href;
     if (loc.match("accueil")) {
         // Open link to search engine in same window instead of new window

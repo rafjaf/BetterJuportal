@@ -56,3 +56,6 @@ This extension does not collect, store, or transmit any personal data. All proce
 # Release history
 - Version 0.1.2025.0630 : first version published
 - Version 0.1.2025.0715 : hotfix required by slight changes in the structure of the pages of the site
+- Version 0.1.2025.0717 :
+    - hotfix required by the fact that Juportal now redirects to https://juportal.just.fgov.be
+    - status message added when the extension is updated
