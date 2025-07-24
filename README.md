@@ -62,3 +62,4 @@ This extension does not collect, store, or transmit any personal data. All proce
 - Version 0.1.2025.0724 :
     - current version is now displayed correctly in the extension popup
     - hotfix required by slight changes in the structure of the pages of the site
+    - improvement of regex filters for the analysis of the judgment

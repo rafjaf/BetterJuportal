@@ -522,7 +522,8 @@
             if (isJudgment) {
                 const CASS_H1 = [/^I+\. La procédure devant la Cour/i, /^I+\. RECHTSPLEGING VOOR HET HOF/i, /^I+\. Les faits/i, /^I+\. FEITEN/i, /^I+\. VOORAFGAANDE PROCEDURE/i,
                                  /^I+V?I*\. Les? moyens? de cassation/i, /I+V?I*\. CASSATIEMIDDEL/i,
-                                 /^(I+V?I*\. )?La décision (attaquée|de la Cour)/i, /I+V?I*\. BESLISSING VAN HET HOF/, /^Par ces motifs(,)?$/i, /^Dictum/i,
+                                 /^(I+V?I*\. )?La décision (attaquée|de la Cour)/i, /I+V?I*\. BESLISSING VAN HET HOF/, /I+V?I*\. Beslissing van het Hof/, /I+V?I*\. Bestreden beslissing/, 
+                                 /^Par ces motifs(,)?$/i, /^Dictum/i,
                                  /^((\w|\d)\. )?Sur le pourvoi/i, /^((\w|\d)\. )?En tant que le pourvoi est dirigé/i,
                                  /^Quant à l'étendue de la cassation/i, /^Omvang van de cassatie/i,];
                 const CASS_H2 = [/^Sur le (.+ )?moyen/i, /^(\w+ )?middel( in zijn geheel)?$/i, /^Le contrôle d'office/i, /^Ambtshalve onderzoek/i, /^Sur la recevabilité (du pourvoi|des pourvois|du mémoire)/i,
