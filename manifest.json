@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Better Juportal",
-  "version": "0.1.2025.0717",
+  "version": "0.1.2025.0724",
   "description": "Improves the working of Juportal website.",
   "permissions": [
 	  "storage"

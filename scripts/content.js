@@ -155,20 +155,20 @@
         }, false);
         // Center and enlarge search button
         let el = document.createElement("div");
-        $("button.submitconfirm").parentElement.insertBefore(el, $("button.submitconfirm"));
-        el.appendChild($("button.submitconfirm"));
-        el.appendChild($("button.submitcommand"));
+        $("button.submitconfirm,button[name=action]").parentElement.insertBefore(el, $("button.submitconfirm,button[name=action]"));
+        el.appendChild($("button.submitconfirm,button[name=action]"));
+        el.appendChild($("button.submitcommand,button[name=clear]"));
         el.style.textAlign = "center";
-        $("button.submitconfirm").style.fontSize = "large";
+        $("button.submitconfirm,button[name=action]").style.fontSize = "large";
         // Add button to search only in Supreme Court judgments
         let btnSearchCass = document.createElement("button");
         btnSearchCass.innerText = "Cass.";
-        btnSearchCass.style.cssText = window.getComputedStyle($("button.submitconfirm")).cssText
+        btnSearchCass.style.cssText = window.getComputedStyle($("button.submitconfirm,button[name=action]")).cssText
         el.appendChild(btnSearchCass);
         btnSearchCass.addEventListener("click", (e) => {
             e.preventDefault();
             $("select#combojusteljurid option[value='1']").selected = true;
-            $("button.submitconfirm").click();
+            $("button.submitconfirm,button[name=action]").click();
         }, false);
     }
 
@@ -388,11 +388,11 @@
     async function initCase() {
         // Enhance readibility of the text of the case
         addStyle(`div.commandesdetaildecision {display: none}
-                     fieldset#text div#textofdecision {font-size: 20px; width: 800px}
-                     fieldset#text p {margin-top: 15px}
-                     fieldset#text div#textofdecision h2 {margin-left: 30px; color: orange;}
-                     fieldset#text div#textofdecision h3 {margin-left: 60px; color: green;}
-                     fieldset#text div#textofdecision h4 {margin-left: 90px; color: blue;}
+                     div.textOfJudgment {font-size: 20px!important; width: 800px}
+                     div.textOfJudgment p {margin-top: 15px}
+                     div.textOfJudgment h2 {margin-left: 30px; color: orange;}
+                     div.textOfJudgment h3 {margin-left: 60px; color: green;}
+                     div.textOfJudgment h4 {margin-left: 90px; color: blue;}
                      button {cursor: pointer;}
                      button#Conclusions {margin-left: 20px; color: white; background-color: darkred; display: none}
                      div#TOC {float: right; position: sticky; top: 0; width: 400px; padding-top: 24px;}
@@ -402,7 +402,7 @@
                      div#TOC a {text-decoration: none;}
                      @keyframes myFade { 0% {opacity: 1;} 100% { opacity: 0;  } }`
                    );
-        const ECLI = $("p.description-entete-table").innerText;
+        const ECLI = $("fieldset td:nth-child(2)").innerText;
         // Special treatment for cases of the Supreme Court
         if ( ECLI.split(":")[2] == "CASS" ) {
             // Analyse reference
@@ -419,15 +419,15 @@
             const linkedDocumentsFieldset = Array.from(targetDoc.querySelectorAll("fieldset")).at(-1);
             if (linkedDocumentsFieldset && linkedDocumentsFieldset.querySelector("legend")?.innerText?.match(/^Publication|Gerelateerde/)) {
                 const relevantLinks = ["Vonnis/arrest:", "Jugement/arrêt:", "Conclusie O.M.:", "Conclusion M.P.:"];
-                const potentialDocumentLink = linkedDocumentsFieldset.querySelector("div.champ-entete").innerText;
+                const potentialDocumentLink = linkedDocumentsFieldset.querySelector("div:nth-child(1)").innerText;
                 if (relevantLinks.some(type => potentialDocumentLink.includes(type))) {
-                    linkedDocument = linkedDocumentsFieldset.querySelector("div.show-lien a");
+                    linkedDocument = linkedDocumentsFieldset.querySelector("div:nth-child(1) a");
                 } else {
                     linkedDocument = null;
                 }
             }
             // Build reference of the case
-            RG = document.querySelectorAll("p.description-entete-table")[1].textContent;
+            RG = document.querySelector("fieldset tr:nth-child(2) td:nth-child(2)").textContent;
             if (RG.match(/\w\d{6}\w/)) {
                 RG = RG.match(/(\w)(\d{2})(\d{4})(\w)/).slice(1,5).join(".");
             }
@@ -437,9 +437,10 @@
             ref_fn = "Cass. " + year + "-" + String(month).padStart(2, '0') + "-" + String(day).padStart(2, '0')
                      + " n° " + RG + (linkedDocument ? " concl. MP" : "") + ".pdf";
             // Insert clickable referrence at the top of the page
-            $("div#display-author").style.marginBottom = "15px";
-            $("div#display-author").removeChild($("div#display-author img"));
-            $("div#display-author").innerHTML = "<img id='btnClipboard' style='cursor: pointer; padding-right: 10px; "
+            const logoCass = document.querySelector("form div:nth-child(3)");
+            logoCass.style.marginBottom = "15px";
+            logoCass.removeChild(logoCass.querySelector("img"));
+            logoCass.innerHTML = "<img id='btnClipboard' style='cursor: pointer; padding-right: 10px; "
                 + "vertical-align: sub" + "' src='" + CLIPBOARD_IMG + "'>"
                 + "<img id='btnFilename' style='cursor: pointer; padding-right: 10px; "
                 + "vertical-align: sub" + "' src='" + SAVE_IMG + "'>"
@@ -538,11 +539,15 @@
                                         /^Rejette/, /^Verwerpt/, /^Casse/, /^Vernietigt/, /^Décrète/];
                 const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
-                let html = $("fieldset#text div#textofdecision").innerHTML;
+                // let html = $("fieldset#text div#textofdecision").innerHTML;
+                const textOfJudgment = Array.from(document.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
+                                       .innerText.match(/Texte de la décision|Tekst van de beslissing/)).querySelector("div");
+                let html = textOfJudgment.innerHTML;
                 html = "<p>" + html.replace(/<br style="user-select: text;">/g, "<br>").split("<br>").join("</p><p>") + "</p>";
-                $("fieldset#text div#textofdecision").innerHTML = html;
+                textOfJudgment.innerHTML = html;
+                textOfJudgment.classList.add("textOfJudgment");
                 // Now analyse it
-                let textChildren = $("fieldset#text div#textofdecision").children;
+                let textChildren = textOfJudgment.children;
                 for (let i = 0; i < textChildren.length; i++) {
                     let t = textChildren[i].textContent.trim().replace(/\t/g, ' ').replace(/  +/g, ' ');
                     if (CASS_H1.some(e => e.test(t))) {
@@ -571,13 +576,13 @@
                 if ($("h1, h2, h3, h4")) { // if at least one heading has been detected
                     let el = document.createElement("div");
                     el.id = "TOC";
-                    $("fieldset#text").insertBefore(el, $("fieldset#text div#textofdecision"));
+                    textOfJudgment.parentElement.insertBefore(el, textOfJudgment);
                     // Add clipboard and save buttons before the reference in the TOC
                     el.innerHTML = `<img id='tocBtnClipboard' style='cursor: pointer; padding-right: 10px; vertical-align: sub' src='${CLIPBOARD_IMG}'>`
                         + `<img id='tocBtnFilename' style='cursor: pointer; padding-right: 10px; vertical-align: sub' src='${SAVE_IMG}'>`
                         + `<span>${$("span#decref").textContent}</span>`
                         + "<p style='text-decoration: underline'>Table of content</p>";
-                    makeTOC($("fieldset#text div#textofdecision"), el);
+                    makeTOC(textOfJudgment, el);
                     // Attach event listeners to the new TOC buttons
                     document.getElementById('tocBtnClipboard').addEventListener('click', function() {
                         document.getElementById('btnClipboard')?.click();
