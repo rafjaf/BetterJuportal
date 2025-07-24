@@ -46,7 +46,8 @@
         "D" : "darkgray"
     }
 
-    let isJudgment, linkedDocument, urlJudgment, urlOpinion, date, day, month, year, ref, ref_fn, ref_fn_Pas, RG, Pas, textAG, titleAG, nameAG, shortNameAG, introAG, urlPasicrisieDownload;
+    let textOfJudgment, isJudgment, linkedDocument, urlJudgment, urlOpinion, date, day, month, year, 
+        ref, ref_fn, ref_fn_Pas, RG, Pas, textAG, titleAG, nameAG, shortNameAG, introAG;
 
     async function getStorage(key) {
         let items = await chrome.storage.local.get(key);
@@ -454,20 +455,20 @@
                 let ref_text = ref.replace(/<[^>]*>/g, '');
                 let s = document.getSelection();
                 if (s.toString()) {
-                    if ($("fieldset#text").contains(s.anchorNode)) { // if text selected from text of the decision
+                    if (textOfJudgment.contains(s.anchorNode)) { // if text selected from text of the decision
                         // GM_setClipboard('"' + s.toString() + '" (' + ref + ")", "html");
                         navigator.clipboard.write([
                             new ClipboardItem({
                                 "text/plain": new Blob(['"' + s.toString() + '" (' + ref_text + ")"], {type: 'text/plain'}),
-                                "text/html": new Blob(['"' + s.toString() + '" (' + ref + ")"], {type: 'text/html'})
+                                "text/html": new Blob(['"' + s.toString() + '" (' + ref.trim() + ")"], {type: 'text/html'})
                             })
                         ]);
                     }
-                    else if ( Array.from(document.querySelectorAll("fieldset[id^=notice]")).some(el => el.contains(s.anchorNode)) ) { // if text selected from fiche
+                    else if ( Array.from(document.querySelectorAll("fieldset")).filter(el => el.querySelector("legend").innerText.trim().match(/Fiche/))?.some(el => el.contains(s.anchorNode)) ) { // if text selected from fiche
                         navigator.clipboard.write([
                             new ClipboardItem({
                                 "text/plain": new Blob([s.toString() + ' (' + ref_text + ")"], {type: 'text/plain'}),
-                                "text/html": new Blob([s.toString() + ' (' + ref + ")"], {type: 'text/html'})
+                                "text/html": new Blob([s.toString() + ' (' + ref.trim() + ")"], {type: 'text/html'})
                             })
                         ]);
                     }
@@ -528,7 +529,7 @@
                                  /^Quant à l'étendue de la cassation/i, /^Omvang van de cassatie/i,];
                 const CASS_H2 = [/^Sur le (.+ )?moyen/i, /^(\w+ )?middel( in zijn geheel)?$/i, /^Le contrôle d'office/i, /^Ambtshalve onderzoek/i, /^Sur la recevabilité (du pourvoi|des pourvois|du mémoire)/i,
                                  /^Sur la question préjudicielle/i, /^Overige grieven/i, /^Beoordeling/i, /^Kosten$/i];
-                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+ (branche|grief)/i, /^Quant aux \w+ branches réunies/i, /^\w+ onderdeel$/i];
+                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+ (branche|grief)/i, /^Quant aux \w+ branches réunies/i, /^\w+ (onderdeel|onderdelen samen)$/i];
                 const CASS_H4 = [/^Dispositions légales violées/i, /^Geschonden wettelijke bepaling/i, /^Décisions et motifs critiqués/i,
                                  /^Griefs/i, /^Sur la fin de non-recevoir/i, /^Ontvankelijkheid/i, /^Grond van niet-ontvankelijkheid/i,
                                  /^Gegrondheid/i, /^\w+ subonderdeel$/i];
@@ -541,7 +542,7 @@
                 const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
                 // let html = $("fieldset#text div#textofdecision").innerHTML;
-                const textOfJudgment = Array.from(document.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
+                textOfJudgment = Array.from(document.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
                                        .innerText.match(/Texte de la décision|Tekst van de beslissing/)).querySelector("div");
                 let html = textOfJudgment.innerHTML;
                 html = "<p>" + html.replace(/<br style="user-select: text;">/g, "<br>").split("<br>").join("</p><p>") + "</p>";
