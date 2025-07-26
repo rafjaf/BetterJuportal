@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Better Juportal",
-  "version": "0.1.2025.0724",
+  "version": "0.1.2025.724",
   "description": "Improves the working of Juportal website.",
   "permissions": [
 	  "storage"
@@ -24,5 +24,10 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "Better Juportal Info"
+  },
+  "browser_specific_settings": {
+	"gecko": {
+		"id": "{71361D7E-ABEB-4A4E-A09D-E1BDFADEA18F}"
+	}
   }
 }

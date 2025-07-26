@@ -184,8 +184,9 @@
     async function initResults() {
         // --- Start of functions moved inside initResults for performance refactoring ---
 
-        // Copy button and hijack copy to clipboard
         addStyle(`@keyframes myFade { 0% {opacity: 1;} 100% { opacity: 0;  } }`);
+
+        /*
         const getSelectionParentElement = function() {
             let parentEl = null, sel;
             if (window.getSelection) {
@@ -207,14 +208,14 @@
             let refElement;
 
             if (e.type === 'click') { // Click on copy/download button
-                refElement = e.target.closest("span[data-ecli]").querySelector(".ref-container");
+                refElement = e.target.closest("span[data-ecli]").querySelector(".my-ref-container");
             } else { // copy event from selection
                 let p = getSelectionParentElement().parentElement;
                 do {
                     p = p.previousElementSibling;
                 }
                 while (p && p.className != "datalist_separateur");
-                refElement = p.nextElementSibling.querySelector("span[data-ecli] .ref-container");
+                refElement = p.nextElementSibling.querySelector("span[data-ecli] .my-ref-container");
             }
 
             urlTarget = refElement.querySelector("a").href;
@@ -236,14 +237,12 @@
             const linkedDocumentsFieldset = Array.from(targetDoc.querySelectorAll("fieldset")).at(-1);
             if (linkedDocumentsFieldset && linkedDocumentsFieldset.querySelector("legend")?.innerText?.match(/^Publication|Gerelateerde/)) {
                 const relevantLinks = ["Vonnis/arrest:", "Jugement/arrêt:", "Conclusie O.M.:", "Conclusion M.P.:"];
-                const potentialDocumentLink = linkedDocumentsFieldset.querySelector("div.champ-entete").innerText;
+                const potentialDocumentLink = linkedDocumentsFieldset.querySelector("div:nth-child(1)").innerText;
                 if (relevantLinks.some(type => potentialDocumentLink.includes(type))) {
-                    linkedDocument = linkedDocumentsFieldset.querySelector("div.show-lien a");
+                    linkedDocument = linkedDocumentsFieldset.querySelector("div:nth-child(1) a");
                 } else {
                     linkedDocument = null;
                 }
-            } else {
-                linkedDocument = targetDoc.querySelector("div.show-lien a");
             }
             if (linkedDocument) {
                 if (isJudgment) {
@@ -298,18 +297,6 @@
             e.target.disabled = false;
         }
 
-        const mouseOverHandle = function (e) {
-            e.stopPropagation();
-            let el = e.target;
-            while (el.nodeName != "TR") {el = el.parentElement;}
-            el.removeEventListener("mouseover", mouseOverHandle, false);
-            while (el?.className != "datalist_separateur") {el = el.previousElementSibling;}
-            if (el.nextElementSibling.querySelector("span").style.display == "none") {
-                el.nextElementSibling.querySelector("span").style.display = "block";
-                el.nextElementSibling.querySelector("span.decision_ligne1").style.display = "none";
-            }
-        }
-
         // --- End of moved functions ---
 
         // hijack copy function
@@ -327,6 +314,8 @@
             }
         });
 
+        */
+
         const processResult = (result) => {
             // Ensure that all results will be displayed in French
             const resultURL = result.href.split("?");
@@ -340,22 +329,24 @@
             if (ECLI.match(/CASS.+(ARR|CONC)/)) {
                 // Make reference
                 let [isJudgment, date, , ,] = analyseECLI(ECLI);
-                RG = result.parentElement.querySelector("span").innerText.match(/(-.+-\s)(.+)/) ? result.parentElement.querySelector("span").innerText.match(/(-.+-\s)(.+)/)[2] : "";
+                RG = result.parentElement.querySelector("td > span").innerText.match(/(-.+-\s)(.+)/) ? result.parentElement.querySelector("td > span").innerText.match(/(-.+-\s)(.+)/)[2] : "";
                 if (RG.match(/\w\d{6}\w/)) {
                     RG = RG.match(/(\w)(\d{2})(\d{4})(\w)/).slice(1,5).join(".");
                 }
-                let refHtml = "<span class='ref-container'>Cass., <a href='" + result.href + "'>" + date + "</a>" + (RG ? ", n° " + RG : "") + "</span>";
+                let refHtml = "<span class='my-ref-container'>Cass., <a href='" + result.href + "'>" + date + "</a>" + (RG ? ", n° " + RG : "") + "</span>";
                 let el = document.createElement("span");
                 el.dataset.ecli = ECLI;
-                el.style.display = "none";
-                el.innerHTML = "<img class='btnClipboard' style='cursor: pointer; padding-right: 10px; "
+                // el.style.display = "none";
+                el.innerHTML = /* "<img class='btnClipboard' style='cursor: pointer; padding-right: 10px; "
                     + "vertical-align: sub" + "' src='" + CLIPBOARD_IMG + "'>"
                     + "<img class='btnFilename' style='cursor: pointer; padding-right: 10px; "
                     + "vertical-align: sub" + "' src='" + SAVE_IMG + "'>"
-                    + refHtml;
-                result.parentElement.insertBefore(el, result.parentElement.querySelector("span"));
+                    + */ refHtml;
+                // Hide original reference and a new one
+                result.parentElement.querySelector("td > span").style.display = "none";
+                result.parentElement.insertBefore(el, result.parentElement.querySelector("td >span"));
                 // Change color depending on nature of the case
-                result.style.backgroundColor = CASES_COLORS[RG[0]] || "white";
+                result.querySelector("span").style.backgroundColor = CASES_COLORS[RG[0]] || "white";
             }
             // Color links to conclusions of advocate general in dark blue
             if (ECLI.match(/CONC/)) {
@@ -380,10 +371,6 @@
             observer.observe(result);
         });
 
-        // Make new span visible on mouseover
-        Array.from(document.querySelectorAll("legend ~ table tr")).slice(5).forEach(el => {
-            el.addEventListener("mouseover", mouseOverHandle, false);
-        });
     }
 
     async function initCase() {
@@ -408,14 +395,12 @@
         if ( ECLI.split(":")[2] == "CASS" ) {
             // Analyse reference
             [isJudgment, date, year, month, day] = analyseECLI(ECLI);
+            textOfJudgment = Array.from(document.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
+                             .innerText.match(/^Texte|Tekst/)).querySelector("div");
+            textOfJudgment.classList.add("textOfJudgment");
             let targetDoc = document;
-            urlJudgment = $("fieldset#text a") ? Array.from(document.querySelectorAll("fieldset#text a")).slice(-1)[0].href : null;
-            if (!urlJudgment && $("a[title^=Original]")) {
-                // Test if there exists an original version
-                let originalDoc = $("a[title^=Original]").href;
-                targetDoc = await loadDoc(originalDoc);
-                urlJudgment = targetDoc.querySelector("fieldset#text a") ? Array.from(targetDoc.querySelectorAll("fieldset#text a")).slice(-1)[0].href : null;
-            }
+            // URL of the judgment is contained in the links of the text
+            urlJudgment = Array.from(textOfJudgment.parentElement.querySelectorAll("a")).at(-1)?.href;
             // Detect if there is a linked document
             const linkedDocumentsFieldset = Array.from(targetDoc.querySelectorAll("fieldset")).at(-1);
             if (linkedDocumentsFieldset && linkedDocumentsFieldset.querySelector("legend")?.innerText?.match(/^Publication|Gerelateerde/)) {
@@ -428,9 +413,13 @@
                 }
             }
             // Build reference of the case
-            RG = document.querySelector("fieldset tr:nth-child(2) td:nth-child(2)").textContent;
-            if (RG.match(/\w\d{6}\w/)) {
-                RG = RG.match(/(\w)(\d{2})(\d{4})(\w)/).slice(1,5).join(".");
+            const RGtr = Array.from(document.querySelectorAll("fieldset tr"))
+                .find(tr => tr.querySelector("td")?.textContent?.match(/No Rôle|Rolnummer/));
+            if (RGtr) {
+                RG = RGtr.querySelector("td:nth-child(2)")?.textContent?.trim();
+                if (RG.match(/\w\d{6}\w/)) {
+                    RG = RG.match(/(\w)(\d{2})(\d{4})(\w)/).slice(1,5).join(".");
+                }
             }
             ref = (isJudgment ? "" : "concl. M.P. avant ") + "Cass., <a href='"
                   + window.location.href.split("?")[0] + "'>" + date + "</a>, n° " + RG
@@ -505,20 +494,6 @@
             else {
                 $("#btnFilename").style.display = "none";
             }
-            // Search Pasicrisie number
-            await searchPasicrisie(true);
-            // If linked document
-            if ( linkedDocument ) {
-                // Add button to access linked document
-                if (!isJudgment) { $("button#Conclusions").innerText = "Arrêt"; }
-                $("button#Conclusions").style.display = "inline-block";
-                $("button#Conclusions").addEventListener("click", function(e){
-                    window.open( $("div.show-lien a").href );
-                    e.preventDefault();
-                }, false);
-                // Detect title and name of the advocate general
-                searchAG(true);
-            }
             // Enhance readability of the text of cases of the Supreme Court
             if (isJudgment) {
                 const CASS_H1 = [/^I+\. La procédure devant la Cour/i, /^I+\. RECHTSPLEGING VOOR HET HOF/i, /^I+\. Les faits/i, /^I+\. FEITEN/i, /^I+\. VOORAFGAANDE PROCEDURE/i,
@@ -526,10 +501,10 @@
                                  /^(I+V?I*\. )?La décision (attaquée|de la Cour)/i, /I+V?I*\. BESLISSING VAN HET HOF/, /I+V?I*\. Beslissing van het Hof/, /I+V?I*\. Bestreden beslissing/, 
                                  /^Par ces motifs(,)?$/i, /^Dictum/i,
                                  /^((\w|\d)\. )?Sur le pourvoi/i, /^((\w|\d)\. )?En tant que le pourvoi est dirigé/i,
-                                 /^Quant à l'étendue de la cassation/i, /^Omvang van de cassatie/i,];
+                                 /^Quant à l'étendue de la cassation/i, /^Omvang van (de )?cassatie/i,];
                 const CASS_H2 = [/^Sur le (.+ )?moyen/i, /^(\w+ )?middel( in zijn geheel)?$/i, /^Le contrôle d'office/i, /^Ambtshalve onderzoek/i, /^Sur la recevabilité (du pourvoi|des pourvois|du mémoire)/i,
                                  /^Sur la question préjudicielle/i, /^Overige grieven/i, /^Beoordeling/i, /^Kosten$/i];
-                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+ (branche|grief)/i, /^Quant aux \w+ branches réunies/i, /^\w+ (onderdeel|onderdelen samen)$/i];
+                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+ (branche|grief)/i, /^Quant aux \w+ branches réunies/i, /^\w+ onderdeel$/i];
                 const CASS_H4 = [/^Dispositions légales violées/i, /^Geschonden wettelijke bepaling/i, /^Décisions et motifs critiqués/i,
                                  /^Griefs/i, /^Sur la fin de non-recevoir/i, /^Ontvankelijkheid/i, /^Grond van niet-ontvankelijkheid/i,
                                  /^Gegrondheid/i, /^\w+ subonderdeel$/i];
@@ -542,12 +517,9 @@
                 const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
                 // let html = $("fieldset#text div#textofdecision").innerHTML;
-                textOfJudgment = Array.from(document.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
-                                       .innerText.match(/Texte de la décision|Tekst van de beslissing/)).querySelector("div");
                 let html = textOfJudgment.innerHTML;
                 html = "<p>" + html.replace(/<br style="user-select: text;">/g, "<br>").split("<br>").join("</p><p>") + "</p>";
                 textOfJudgment.innerHTML = html;
-                textOfJudgment.classList.add("textOfJudgment");
                 // Now analyse it
                 let textChildren = textOfJudgment.children;
                 for (let i = 0; i < textChildren.length; i++) {
@@ -593,6 +565,20 @@
                         document.getElementById('btnFilename')?.click();
                     });
                 }
+            }
+            // Search Pasicrisie number
+            await searchPasicrisie(true);
+            // If linked document
+            if ( linkedDocument ) {
+                // Add button to access linked document
+                if (!isJudgment) { $("button#Conclusions").innerText = "Arrêt"; }
+                $("button#Conclusions").style.display = "inline-block";
+                $("button#Conclusions").addEventListener("click", function(e){
+                    window.open( $("div.show-lien a").href );
+                    e.preventDefault();
+                }, false);
+                // Detect title and name of the advocate general
+                searchAG(true);
             }
         }
     }
@@ -643,55 +629,28 @@
     }
 
     async function searchAG(changeSpan, targetDoc = document) {
-        // Load opinion of the linked document
-        let r = await fetch(linkedDocument.href);
-        let html = await r.text();
-        let parser = new DOMParser();
-        let doc = parser.parseFromString(html, "text/html");
-        // Determine AG
-        if (!isJudgment) {
-            textAG = targetDoc.querySelector("fieldset#text div#plaintext");
-            urlOpinion = Array.from(doc.querySelectorAll("fieldset#text a")).slice(-1)[0]?.href;
-        }
-        else {
-            textAG = doc.querySelector("fieldset#text div#plaintext");
-            urlOpinion = doc.querySelector("fieldset a[href*='CONC']")?.href;
-        }
+
         const AG_WOMEN = ["De Raeve", "Herregodts", "Inghels", "Liekendaele", "Mortier"];
-        if (textAG) {
-            // Try to match the standard pattern first
-            let matchChild = Array.from(textAG.children).find(c => c.innerText.match(/(^Conclusi.+:?$)|(^\w.+(a dit en substance|heeft in substantie gezegd)\s?:?)/i));
-            textAG = matchChild ? matchChild.innerText : textAG.innerText;
-        } else {
-            textAG = null;
+        
+        if (isJudgment) {
+            // Search for the AG in the text of the judgment
+            // Let's try first to find the advocate general in the procedural history of the case
+            textAG = Array.from(textOfJudgment.children)
+                .find(el => el.textContent.match(/a déposé des conclusions au greffe|heeft geconcludeerd/))
+                ?.textContent.replace(/a déposé des conclusions au greffe(\.)?|heeft geconcludeerd(\.)?/, "");
+            // If not found, we start from the end of the text to find the composition of the court
+            textAG = textAG || Array.from(textOfJudgment.children).slice().reverse()
+                .find(el => el.textContent.match(/(en présence de |in aanwezigheid van )(.+)(,)/))
+                ?.textContent.match(/(en présence de |in aanwezigheid van )(.+)(,)/)[2];
+        } 
+        else {
+            // Search for the AG in the text of the opinion
+            textAG = textOfJudgment.textContent.split("\n").find(el => el.trim().match(/(^Conclusi.+:?$)|(^\w.+(a dit en substance|heeft in substantie gezegd)\s?:?)/i));
         }
+
         if (textAG) {
-            // Try standard pattern
+            textAG = textAG.replace(/\s?:/, "").replace(/,/, "").trim();
             let agMatch = textAG.match(/((((premier )?avocat|procureur) général)|((eerste )?(advocaat|procureur)-generaal))( met opdracht)?(\s.+:?)/i);
-            // Try new pattern: "Conclusions du premier avocat général M. NOLET DE BRAUWERE :"
-            let agLineMatch = textAG.match(/Conclusions du ([^:]+?) (M\.|Mme) ([A-Z .'-]+) *:/i);
-            if (agLineMatch) {
-                // agLineMatch[1]: title, agLineMatch[2]: gender, agLineMatch[3]: name
-                titleAG = agLineMatch[1].trim();
-                nameAG = agLineMatch[3].trim();
-                // Convert to title case if all uppercase
-                if (nameAG === nameAG.toUpperCase()) {
-                    nameAG = toAGTitleCase(nameAG);
-                }
-                shortNameAG = nameAG;
-                introAG = "conclusions de " + (agLineMatch[2] === "Mme" ? "Mme" : "M.") + " ";
-                ref = ref.replace("concl. M.P.", introAG + titleAG + " " + nameAG);
-                ref_fn = ref_fn.replace("MP", shortNameAG);
-                if (changeSpan) {
-                    $("span#decref").innerHTML = $("span#decref").innerHTML.replace("M.P.", shortNameAG);
-                    // Also update TOC reference if present
-                    let tocRefSpan = document.querySelector("#TOC span");
-                    if (tocRefSpan) {
-                        tocRefSpan.innerHTML = tocRefSpan.innerHTML.replace("M.P.", shortNameAG);
-                    }
-                }
-                return;
-            }
             if (agMatch) {
                 // Determine title
                 let titleBase = agMatch[1] || agMatch[5];
@@ -701,18 +660,26 @@
                     titleAG = "l'" + titleAG;
                 } else {
                     titleAG = (titleBase || "")
-                        .replace("eerste", "premier")
-                        .replace("advocaat-generaal", "avocat général")
-                        .replace("procureur-generaal", "procureur général");
-                    titleAG = ((/^a|e|i|o|u|y/i.test(titleAG)) ? "l'" : "le ") + titleAG.toLowerCase();
+                        .replace(/eerste/i, "premier")
+                        .replace(/advocaat-generaal/i, "avocat général")
+                        .replace(/procureur-generaal/i, "procureur général");
+                    // Fix: Check the first character correctly and ensure proper spacing
+                    const prefix = (/^[aeiouyhAEIOUYH]/i.test(titleAG)) ? "l'" : "le ";
+                    titleAG = prefix + titleAG.toLowerCase();
                 }
-                nameAG = agMatch[9] ? agMatch[9].replace(/(a dit en substance)|(heeft in substantie gezegd)|:/gi, "").trim() : "";
+                nameAG = agMatch[9]? agMatch[9].trim() : "";
                 // Convert to title case if all uppercase
                 if (nameAG && nameAG === nameAG.toUpperCase()) {
                     nameAG = toAGTitleCase(nameAG);
                 }
-                if (nameAG.match(/(\w\. )(.+)/)) {
-                    shortNameAG = nameAG.match(/(\w\. )(.+)/)[2];
+                if (nameAG.match(/(.+\s)(.+)/)) {
+                    if (nameAG == "Jean Marie Genicot") { 
+                        // Special case for AG Jean Marie Genicot (Marie is part of the surname)
+                        shortNameAG = "Genicot";
+                    }
+                    else {
+                        shortNameAG = nameAG.match(/(.+?\s)(.+)/)[2];
+                    }
                 } else {
                     shortNameAG = nameAG;
                 }

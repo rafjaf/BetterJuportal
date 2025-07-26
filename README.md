@@ -54,12 +54,17 @@ This extension does not collect, store, or transmit any personal data. All proce
 - [**GitHub Copilot**](https://github.com/features/copilot) was used to review and improve the code.
 
 # Release history
-- Version 0.1.2025.0630 : first version published
-- Version 0.1.2025.0715 : hotfix required by slight changes in the structure of the pages of the site
-- Version 0.1.2025.0717 :
+- Version 0.1.2025.630 : first version published
+- Version 0.1.2025.715 : hotfix required by slight changes in the structure of the pages of the site
+- Version 0.1.2025.717 :
     - hotfix required by the fact that Juportal now redirects to https://juportal.just.fgov.be
     - status message added when the extension is updated
-- Version 0.1.2025.0724 :
+- Version 0.1.2025.724 :
     - current version is now displayed correctly in the extension popup
     - hotfix required by slight changes in the structure of the pages of the site
     - improvement of regex filters for the analysis of the judgment
+- Version 0.1.2025.726 :
+    - merged Chrome and Firefox manifest.json
+    - improved and simplified treatment of results page due to a change in the page structure
+    - improved detection of RG when analysing judgments
+    - rewritten code to detect the name of the advocate general (taken from the text of the judgement if possible)
