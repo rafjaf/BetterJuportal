@@ -68,3 +68,5 @@ This extension does not collect, store, or transmit any personal data. All proce
     - improved and simplified treatment of results page due to a change in the page structure
     - improved detection of RG when analysing judgments
     - rewritten code to detect the name of the advocate general (taken from the text of the judgement if possible)
+- Version XXX :
+    - improved fade in for status bar

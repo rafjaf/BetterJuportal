@@ -778,6 +778,9 @@
        }
 		popup.innerHTML = msg;
 
+		// Force reflow to ensure initial state is applied
+		void popup.offsetHeight;
+
 		// Show the popup
 		popup.style.transform = 'translateY(0%)';
 		popup.style.opacity = '1';
