@@ -408,6 +408,13 @@
                 const potentialDocumentLink = linkedDocumentsFieldset.querySelector("div:nth-child(1)").innerText;
                 if (relevantLinks.some(type => potentialDocumentLink.includes(type))) {
                     linkedDocument = linkedDocumentsFieldset.querySelector("div:nth-child(1) a");
+                    // Load the linked document to get the opinion PDF URL
+                    if (linkedDocument) {
+                        let linkedDoc = await loadDoc(linkedDocument.href);
+                        urlOpinion = Array.from(linkedDoc.querySelectorAll("fieldset")).find(el => el.querySelector("legend")
+                                     ?.innerText?.match(/^Texte|Tekst/))?.querySelectorAll("a");
+                        urlOpinion = urlOpinion ? Array.from(urlOpinion).at(-1)?.href : null;
+                    }
                 } else {
                     linkedDocument = null;
                 }
@@ -509,12 +516,13 @@
                                  /^Griefs/i, /^Sur la fin de non-recevoir/i, /^Ontvankelijkheid/i, /^Grond van niet-ontvankelijkheid/i,
                                  /^Gegrondheid/i, /^\w+ subonderdeel$/i];
                 const CASS_TEACHING = [/^(\d+\. )?Il (n(e |'))?((s')?en )?(résulte|ressort|suit|s'ensuit|se déduit)/, /^(\d+\. )?En vertu de cette disposition/, /^(\d+\. )?Cet article/,
-                                       /^(\d+\. )?Uit( (de samenhang|het geheel) (van|tussen))? (deze|die) (wets)?bepaling(en)?( en hun samenhang)? (volgt|vloeit voort)/, /^(\d+\. )?Hieruit volgt/];
+                                       /^(\d+\. )?Uit( ((de samenhang|het geheel) (van|tussen))? (deze|die) (wets)?bepaling(en)?( en hun samenhang)?|het bovenstaande) (volgt|vloeit voort)/,
+                                       /^(\d+\. )?Hieruit volgt/, /^(\d+\. )?Uit het bovenstaande volgt/];
                 const CASS_TEACHING_BEFORE = [/article|artikel/, /disposition|bepaling/];
                 const CASS_HIGHLIGHT = [/manque en (fait|droit)/, /mist (het )?(\w+ )?feitelijke grondslag/, /faalt (het )?(\w+ )?naar recht/, /ne peut(, dès lors,)? être accueilli(e)?/, /niet worden aangenomen/,
                                         /irrecevable\./, /niet ontvankelijk\./, /fondé\./, /gegrond\./, /moet worden verworpen\./, /behoe(ft|ven) geen antwoord/,
                                         /^Rejette/, /^Verwerpt/, /^Casse/, /^Vernietigt/, /^Décrète/];
-                const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s'çûéè]+)(, (avocat|advocaat))/i;
+                const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s’'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
                 // let html = $("fieldset#text div#textofdecision").innerHTML;
                 let html = textOfJudgment.innerHTML;
