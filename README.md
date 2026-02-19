@@ -72,3 +72,15 @@ This extension does not collect, store, or transmit any personal data. All proce
     - improved fade in for status bar
     - fixed a bug preventing merging of judgement and advocate's general opinion when clicking on save button
     - improved highlighting of the case
+- Version 0.1.2026.219 :
+    - fixed timing issue: the extension now waits for the page content to fully load before applying enhancements, preventing cases where the text would be displayed but not reformatted
+    - the first name of the advocate general is now abbreviated in the case reference (e.g. D. Vandermeersch instead of Damien Vandermeersch), with proper handling of composite first names (e.g. J.-M. for Jean-Marie Genicot)
+    - improved detection of Dutch heading combinations (e.g. "Tweede en derde onderdeel") as heading level 3
+    - "Sur le premier rameau" and similar combinations are now detected as h4 headings
+    - "Par ces énonciations" and "Ce faisant" are now highlighted with a green background as key teachings
+    - "Uit voormelde bepalingen in hun onderlinge samenhang volgt" is now highlighted with a green background
+    - fixed advocate general name detection for judgments where the AG deposited conclusions using alternative phrasings (e.g. "a déposé au greffe des conclusions", "conclusie neergelegd ter griffie")
+    - fixed wrong advocate general detection when the AG present at the hearing differs from the one who wrote the conclusions
+    - "niet ontvankelijk" and "irrecevable" are now highlighted even when not immediately followed by a period
+    - fixed a false positive where paragraphs starting with a number and containing the word "grief" were wrongly detected as headings
+    - for advocate general conclusions, endnotes are now displayed in a sticky sidebar in the right margin, allowing to consult them while reading the conclusion without scrolling back and forth

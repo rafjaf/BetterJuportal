@@ -97,6 +97,20 @@
         return parser.parseFromString(html, "text/html");
     }
 
+    function waitForElement(selector, timeout = 30000) {
+        return new Promise(resolve => {
+            if ($(selector)) return resolve(true);
+            const observer = new MutationObserver(() => {
+                if ($(selector)) {
+                    observer.disconnect();
+                    resolve(true);
+                }
+            });
+            observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+            setTimeout(() => { observer.disconnect(); resolve(false); }, timeout);
+        });
+    }
+
     function $(selector) {
         return document.querySelector(selector);
     }
@@ -388,6 +402,8 @@
                      div#TOC ul {font-size: 14px;}
                      div#TOC li {padding: 0 0 0 0;}
                      div#TOC a {text-decoration: none;}
+                     div#endnotes {float: right; position: sticky; top: 0; width: 400px; max-height: 100vh; overflow-y: auto; padding-top: 24px; border-left: 2px solid #ccc; padding-left: 15px;}
+                     div#endnotes p {font-size: 14px; margin: 5px 0;}
                      @keyframes myFade { 0% {opacity: 1;} 100% { opacity: 0;  } }`
                    );
         const ECLI = $("fieldset td:nth-child(2)").innerText;
@@ -511,16 +527,21 @@
                                  /^Quant à l'étendue de la cassation/i, /^Omvang van (de )?cassatie/i,];
                 const CASS_H2 = [/^Sur le (.+ )?moyen/i, /^(\w+ )?middel( in zijn geheel)?$/i, /^Le contrôle d'office/i, /^Ambtshalve onderzoek/i, /^Sur la recevabilité (du pourvoi|des pourvois|du mémoire)/i,
                                  /^Sur la question préjudicielle/i, /^Overige grieven/i, /^Beoordeling/i, /^Kosten$/i];
-                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+ (branche|grief)/i, /^Quant aux \w+ branches réunies/i, /^\w+ onderdeel$/i];
+                const CASS_H3 = [/^(\d\. )?(Quant (à la|au) )?[\wéè]+( et (à la |au )?[\wéè]+)? (branches?|griefs?)\s*:?\s*$/i,
+                                 /^Quant aux (\w+ )+(et (aux? |à la )?(\w+ )+)?(branches?|griefs?)( réuni(e)?s)?\s*:?\s*$/i,
+                                 /^\w+( (en|tot en met) \w+)* onderdeel(en)?\s*$/i];
                 const CASS_H4 = [/^Dispositions légales violées/i, /^Geschonden wettelijke bepaling/i, /^Décisions et motifs critiqués/i,
                                  /^Griefs/i, /^Sur la fin de non-recevoir/i, /^Ontvankelijkheid/i, /^Grond van niet-ontvankelijkheid/i,
-                                 /^Gegrondheid/i, /^\w+ subonderdeel$/i];
+                                 /^Gegrondheid/i, /^\w+( (en|tot en met) \w+)* subonderdeel(en)?\s*$/i,
+                                 /^Sur (le(s)?|les) .+rameau(x)?\s*:?\s*$/i];
                 const CASS_TEACHING = [/^(\d+\. )?Il (n(e |'))?((s')?en )?(résulte|ressort|suit|s'ensuit|se déduit)/, /^(\d+\. )?En vertu de cette disposition/, /^(\d+\. )?Cet article/,
-                                       /^(\d+\. )?Uit( ((de samenhang|het geheel) (van|tussen))? (deze|die) (wets)?bepaling(en)?( en hun samenhang)?|het bovenstaande) (volgt|vloeit voort)/,
-                                       /^(\d+\. )?Hieruit volgt/, /^(\d+\. )?Uit het bovenstaande volgt/];
+                                       /^(\d+\. )?Uit( ((de samenhang|het geheel) (van|tussen))? (deze|die|voormelde) (wets)?bepaling(en)?( (en|in) hun (onderlinge )?samenhang)?|het bovenstaande) (volgt|vloeit voort)/,
+                                       /^(\d+\. )?Hieruit volgt/, /^(\d+\. )?Uit het bovenstaande volgt/,
+                                       /^(\d+\. )?Uit voormelde bepalingen.+(volgt|vloeit voort)/,
+                                       /^(\d+\. )?Par ces énonciations/, /^(\d+\. )?Ce faisant/];
                 const CASS_TEACHING_BEFORE = [/article|artikel/, /disposition|bepaling/];
                 const CASS_HIGHLIGHT = [/manque en (fait|droit)/, /mist (het )?(\w+ )?feitelijke grondslag/, /faalt (het )?(\w+ )?naar recht/, /ne peut(, dès lors,)? être accueilli(e)?/, /niet worden aangenomen/,
-                                        /irrecevable\./, /niet ontvankelijk\./, /fondé\./, /gegrond\./, /moet worden verworpen\./, /behoe(ft|ven) geen antwoord/,
+                                        /irrecevable/, /niet ontvankelijk/, /fondé\./, /gegrond\./, /moet worden verworpen\./, /behoe(ft|ven) geen antwoord/,
                                         /^Rejette/, /^Verwerpt/, /^Casse/, /^Vernietigt/, /^Décrète/];
                 const CASS_ATTORNEY = /^((représentée?s? par|ayant pour conseil|vertegenwoordigd door|met als raadsman) )?((Maître|Me|mr.|Mr.) )([\w\s’'çûéè]+)(, (avocat|advocaat))/i;
                 // Replace <br> by <p>
@@ -572,6 +593,24 @@
                     document.getElementById('tocBtnFilename').addEventListener('click', function() {
                         document.getElementById('btnFilename')?.click();
                     });
+                }
+            }
+            else {
+                // Conclusion of advocate general: format text and move endnotes to sidebar
+                let html = textOfJudgment.innerHTML;
+                html = "<p>" + html.replace(/<br style="user-select: text;">/g, "<br>").split("<br>").join("</p><p>") + "</p>";
+                textOfJudgment.innerHTML = html;
+                // Find endnotes separator (a line of underscores or hyphens)
+                let allChildren = Array.from(textOfJudgment.children);
+                let separatorIdx = allChildren.findIndex(el => el.textContent.trim().match(/^_{10,}$|^-{10,}$/));
+                if (separatorIdx > -1) {
+                    let endnotesElements = allChildren.slice(separatorIdx + 1);
+                    allChildren[separatorIdx].remove();
+                    let el = document.createElement("div");
+                    el.id = "endnotes";
+                    el.innerHTML = "<hr style='border: 1px solid #999; margin-bottom: 10px'>";
+                    textOfJudgment.parentElement.insertBefore(el, textOfJudgment);
+                    endnotesElements.forEach(n => el.appendChild(n));
                 }
             }
             // Search Pasicrisie number
@@ -636,17 +675,28 @@
         }).join('');
     }
 
+    function abbreviateFirstName(firstName) {
+        // Abbreviate first names: "Damien" → "D.", "Jean-Marie" → "J.-M."
+        return firstName.split(' ').map(part =>
+            part.split('-').map(sub => sub.charAt(0).toUpperCase() + '.').join('-')
+        ).join(' ');
+    }
+
     async function searchAG(changeSpan, targetDoc = document) {
 
-        const AG_WOMEN = ["De Raeve", "Herregodts", "Inghels", "Liekendaele", "Mortier"];
+        const AG_WOMEN = ["De Raeve", "Herregodts", "Inghels", "Liekendaele", "Mortier", "Römer"];
         
         if (isJudgment) {
-            // Search for the AG in the text of the judgment
-            // Let's try first to find the advocate general in the procedural history of the case
+            // Search for the AG in the text of the judgment.
+            // Priority 1: paragraph ending cleanly after the name ("heeft geconcludeerd" / "a déposé des conclusions")
             textAG = Array.from(textOfJudgment.children)
-                .find(el => el.textContent.match(/a déposé des conclusions au greffe|heeft geconcludeerd/))
-                ?.textContent.replace(/a déposé des conclusions au greffe(\.)?|heeft geconcludeerd(\.)?/, "");
-            // If not found, we start from the end of the text to find the composition of the court
+                .find(el => el.textContent.match(/heeft geconcludeerd|a déposé.+conclusions?/i))
+                ?.textContent.replace(/(a déposé.+conclusions?.*|heeft geconcludeerd.*)$/i, "");
+            // Priority 2: paragraph with "conclusie neergelegd" – take raw text, nameAG cleaned later
+            textAG = textAG || Array.from(textOfJudgment.children)
+                .find(el => el.textContent.match(/conclusi\w+.+neergelegd/i))
+                ?.textContent;
+            // Priority 3: fall back to the closing paragraph mentioning the AG present at the hearing
             textAG = textAG || Array.from(textOfJudgment.children).slice().reverse()
                 .find(el => el.textContent.match(/(en présence de |in aanwezigheid van )(.+)(,)/))
                 ?.textContent.match(/(en présence de |in aanwezigheid van )(.+)(,)/)[2];
@@ -676,23 +726,29 @@
                     titleAG = prefix + titleAG.toLowerCase();
                 }
                 nameAG = agMatch[9]? agMatch[9].trim() : "";
+                // Strip non-name trailing text (e.g. "heeft op 22 oktober 2025", "een schriftelijke conclusie")
+                nameAG = nameAG.replace(/\s+heeft\b.*$/i, "").replace(/\s+een\s+.*$/i, "").trim();
                 // Convert to title case if all uppercase
                 if (nameAG && nameAG === nameAG.toUpperCase()) {
                     nameAG = toAGTitleCase(nameAG);
                 }
+                let firstName = "";
                 if (nameAG.match(/(.+\s)(.+)/)) {
                     if (nameAG == "Jean Marie Genicot") { 
-                        // Special case for AG Jean Marie Genicot (Marie is part of the surname)
+                        // Special case for AG Jean Marie Genicot (Jean-Marie is the compound first name)
                         shortNameAG = "Genicot";
+                        firstName = "Jean-Marie";
                     }
                     else {
                         shortNameAG = nameAG.match(/(.+?\s)(.+)/)[2];
+                        firstName = nameAG.match(/(.+?\s)(.+)/)[1].trim();
                     }
                 } else {
                     shortNameAG = nameAG;
                 }
+                let abbreviatedNameAG = firstName ? abbreviateFirstName(firstName) + " " + shortNameAG : shortNameAG;
                 introAG = (isJudgment ? "avec les " : "") + "conclusions de " + (AG_WOMEN.some(n => nameAG.match(n)) ? "Mme" : "M.") + " ";
-                ref = ref.replace("concl. M.P.", introAG + titleAG + " " + nameAG);
+                ref = ref.replace("concl. M.P.", introAG + titleAG + " " + abbreviatedNameAG);
                 ref_fn = ref_fn.replace("MP", shortNameAG);
                 if (changeSpan) {
                     $("span#decref").innerHTML = $("span#decref").innerHTML.replace("M.P.", shortNameAG);
@@ -830,6 +886,8 @@
         initResults();
     }
     else if (loc.match("content")) {
-        initCase();
+        if (await waitForElement("fieldset td:nth-child(2)")) {
+            initCase();
+        }
     }
 })();
