@@ -1,0 +1,6 @@
+.agents/
+doc/
+.gitignore
+.packageignore
+LICENSE
+README.md

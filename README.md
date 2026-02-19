@@ -84,3 +84,4 @@ This extension does not collect, store, or transmit any personal data. All proce
     - "niet ontvankelijk" and "irrecevable" are now highlighted even when not immediately followed by a period
     - fixed a false positive where paragraphs starting with a number and containing the word "grief" were wrongly detected as headings
     - for advocate general conclusions, endnotes are now displayed in a sticky sidebar in the right margin, allowing to consult them while reading the conclusion without scrolling back and forth
+- Version 0.2.0 : code refactored into smaller files

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Better Juportal",
-  "version": "0.1.2026.219",
+  "version": "0.2.0",
   "description": "Improves the working of Juportal website.",
   "permissions": [
 	  "storage"
@@ -12,7 +12,7 @@
         "*://juportal.be/*",
         "*://juportal.just.fgov.be/*"
       ],
-      "js": ["scripts/content.js", "scripts/pdf-lib.min.js"],
+      "js": ["scripts/pdf-lib.min.js", "scripts/constants.js", "scripts/utils.js", "scripts/formular.js", "scripts/case.js", "scripts/main.js"],
       "run_at": "document_idle"
     }
   ],
