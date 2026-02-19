@@ -407,7 +407,21 @@ async function initCase() {
                 el.innerHTML = "<hr style='border: 1px solid #999; margin-bottom: 10px'>";
                 textOfJudgment.parentElement.insertBefore(el, textOfJudgment);
                 endnotesElements.forEach(n => el.appendChild(n));
+                // Color footnote numbers (N) in blue in the endnotes sidebar and make them clickable
+                Array.from(el.querySelectorAll('p')).forEach(p => {
+                    p.innerHTML = p.innerHTML.replace(/\((\d{1,3})\)/g, (_, n) =>
+                        `<span id='fn-note-${n}' style='color: #1a73e8; font-weight: bold; cursor: pointer'
+                            onclick='document.getElementById("fn-call-${n}")?.scrollIntoView({behavior:"smooth",block:"center"})'
+                        >(${n})</span>`);
+                });
             }
+            // Color footnote calls (N) in blue in the main text body and make them clickable
+            Array.from(textOfJudgment.querySelectorAll('p')).forEach(p => {
+                p.innerHTML = p.innerHTML.replace(/\((\d{1,3})\)/g, (_, n) =>
+                    `<span id='fn-call-${n}' style='color: #1a73e8; font-weight: bold; cursor: pointer'
+                        onclick='document.getElementById("fn-note-${n}")?.scrollIntoView({behavior:"smooth",block:"start"})'
+                    >(${n})</span>`);
+            });
         }
         // Search Pasicrisie number
         await searchPasicrisie(true);
