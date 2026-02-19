@@ -1,4 +1,5 @@
 .agents/
+.git/
 doc/
 .gitignore
 .packageignore
