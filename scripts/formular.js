@@ -6,8 +6,10 @@
 
 function analyseECLI(ECLI) {
     let isJudgment, date, year, month, day;
-    isJudgment = (ECLI.split(":")[4].slice(0,3) == "ARR");
-    [, year, month, day] = ECLI.split(":")[4].slice(isJudgment ? 4 : 5, isJudgment ? 12 : 13).match(/(\d{4})(\d{2})(\d{2})/);
+    const part5 = ECLI.split(":")[4];
+    isJudgment = !part5.startsWith("CONC");
+    const dateStart = part5.indexOf(".") + 1;
+    [, year, month, day] = part5.slice(dateStart, dateStart + 8).match(/(\d{4})(\d{2})(\d{2})/);
     date = parseInt(day) + (parseInt(day) == 1 ? "er " : " ") + MONTH_FR[month - 1] + " " + year;
     return [isJudgment, date, year, month, day];
 }
@@ -60,7 +62,7 @@ async function initResults() {
         }
         // Process judgment of the Supreme Court
         const ECLI = result.title;
-        if (ECLI.match(/CASS.+(ARR|CONC)/)) {
+        if (ECLI.match(/CASS.+(ARR|ORD|CONC)/)) {
             // Make reference
             let [isJudgment, date, , ,] = analyseECLI(ECLI);
             RG = result.parentElement.querySelector("td > span").innerText.match(/(-.+-\s)(.+)/) ? result.parentElement.querySelector("td > span").innerText.match(/(-.+-\s)(.+)/)[2] : "";

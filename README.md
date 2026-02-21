@@ -86,3 +86,4 @@ This extension does not collect, store, or transmit any personal data. All proce
     - for advocate general conclusions, endnotes are now displayed in a sticky sidebar in the right margin, allowing to consult them while reading the conclusion without scrolling back and forth
 - Version 0.2.0 : code refactored into smaller files
 - Version 0.2.1 : transform notes in the advocate general's conclusion into links
+- Version 0.2.2 : fix ECLI parsing for ORD and similar references
